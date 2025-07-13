@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📶 Статус VelionBot</title>
+  <link rel="icon" href="imgs/velionteam.png" type="image/x-icon">
+  <meta name="description" content="VelionBot — мощный дискорд бот с мини-играми, интеграциями Twitch и Steam и многим другим." />
+  <meta name="keywords" content="Дискорд, бот, VelionBot, развлечения, Twitch, Steam, мини-игры, модерация, Discord bot" />
+  <meta name="author" content="VelionBot Team" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="VelionBot — Дискорд бот для управления и развлечений" />
+  <meta property="og:description" content="VelionBot — мощный дискорд бот с мини-играми, интеграциями Twitch и Steam и многим другим." />
+  <meta property="og:url" content="https://status.velion.site/" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="VelionBot — Дискорд бот для управления и развлечений" />
+  <meta name="twitter:description" content="VelionBot — мощный дискорд бот с мини-играми, интеграциями Twitch и Steam и многим другим." />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: #00ffcc;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 5% 10px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      display: inline-block;
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,255,204,0.2);
+      max-width: 600px;
+    }
+    .status-up { color: #00ff00; }
+    .status-down { color: #ff4444; }
+    .label { color: #aaa; font-size: 14px; }
+    h1 { font-size: 32px; margin-bottom: 20px; }
+    h2 { margin: 10px 0; }
+    canvas {
+    margin: 30px 0;
+    max-width: 100%;
+    height: auto !important;
+  }
+
+    @media (max-width: 680px) {
+    body {
+        max-height: 10rem;
+    }
+    
+    footer {
+      padding: 20px 10px 40px;
+    }
+
+    footer a {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+
+    footer img {
+      width: 16px;
+      height: 16px;
+      margin-right: 6px;
+    }
+    canvas {
+      margin: 20px 0;
+      height: auto !important;
+    }
+  }
+
+    @keyframes gradient-flow {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .velion-hover:hover .velion-gradient {
+    background: linear-gradient(90deg, #00ffcc, #33ffaa, #00ffcc);
+    background-size: 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: gradient-flow 3s linear infinite;
+  }
+  </style>
+</head>
+<body>
+    <div id="info-block" style="margin-bottom: 20px; margin-top: -4%;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="#00ff88" viewBox="0 0 24 24">
+    <path d="M20.285 2.859L9 14.145l-5.285-5.286-1.43 1.43L9 17.006 21.715 4.29z"/>
+  </svg>
+  <p style="font-size: 18px; margin: 10px 0 0;">Все услуги предоставляются онлайн</p>
+  <p style="color: #888; font-size: 14px;" id="updated-at">Статус сервиса проверяется в режиме реального времени.</p>
+</div>
+
+  <div class="card">
+    <h1>📶 Статус VelionBot</h1>
+    <h2 id="status">Загрузка...</h2>
+    <p><span class="label">Сайт:</span> <strong>www.velion.site</strong></p>
+    <p><span class="label">Средний ответ:</span> <span id="responsetime">—</span> ms</p>
+    <p><span class="label">ID монитора:</span> 800936645</p>
+
+    <canvas id="chart-response" width="800" height="300"></canvas>
+
+    <h2>📉 График статистики отклика (24ч)</h2>
+    <canvas id="chart-statistics" width="800" height="300"></canvas>
+  </div>
+<footer style="text-align: center; padding: 30px 0 10px; color: #aaa; font-size: 14px;">
+  <p style="margin-bottom: 10px;">Благодарим за использование наших сервисов 💚</p>
+  <a href="https://velion.site" target="_blank" style="display: inline-flex; align-items: center; text-decoration: none; background: rgba(0,255,204,0.05); padding: 6px 12px; border-radius: 8px; transition: background 0.2s;">
+    <img src="imgs/velionteam.png" alt="VelionTeam" style="width: 18px; height: 18px; margin-right: 8px;">
+    <span style="color: #00ffcc; font-weight: 500;"> VelionTeam</span>
+  </a>
+</footer>
+
+  <script>
+    const API_KEY = 'ur2991330-1dbc58b73f7a923aaaac3478';
+    const MONITOR_ID = 800936645;
+
+    fetch('https://api.uptimerobot.com/v2/getMonitors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `api_key=${API_KEY}&monitors=${MONITOR_ID}&response_times=1&response_times_limit=288&logs=1&format=json`
+    })
+    .then(res => res.json())
+    .then(data => {
+      const monitor = data.monitors[0];
+
+      const statusEl = document.getElementById('status');
+      const responseEl = document.getElementById('responsetime');
+
+      const statusText = {
+        0: "🟥 Неизвестно",
+        1: "🔴 Оффлайн",
+        2: "🟢 Онлайн",
+        8: "🟠 Проверка...",
+        9: "🟣 Приостановлен"
+      };
+
+      statusEl.innerHTML = statusText[monitor.status] || "Неизвестно";
+      statusEl.className = monitor.status === 2 ? "status-up" : "status-down";
+      responseEl.innerText = monitor.average_response_time || "—";
+
+      const responseTimes = monitor.response_times;
+      const logs = monitor.logs.filter(log => log.datetime * 1000 > Date.now() - 86400000);
+      
+      const labels = responseTimes.map(rt => {
+        const date = new Date(rt.datetime * 1000);
+        return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+      });
+      const values = responseTimes.map(rt => rt.value);
+      new Chart(document.getElementById('chart-response').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Время отклика (ms)',
+            data: values,
+            borderColor: '#00ffcc',
+            backgroundColor: 'rgba(0,255,204,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { ticks: { color: '#00ffcc' }, grid: { color: '#333' } },
+            x: { ticks: { color: '#00ffcc' }, grid: { display: false } }
+          },
+          plugins: { legend: { labels: { color: '#00ffcc' } } }
+        }
+      });
+      const statLabels = labels;
+      const statValues = values;
+
+      new Chart(document.getElementById('chart-statistics').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: statLabels,
+          datasets: [{
+            label: 'Отклик (ms)',
+            data: statValues,
+            borderColor: '#ffaa00',
+            backgroundColor: 'rgba(255,170,0,0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { ticks: { color: '#ffaa00' }, grid: { color: '#444' } },
+            x: { ticks: { color: '#ffaa00' }, grid: { display: false } }
+          },
+          plugins: {
+            legend: { labels: { color: '#ffaa00' } }
+          }
+        }
+      });
+
+    })
+
+
+    .catch(err => {
+      document.getElementById('status').innerHTML = "Ошибка загрузки";
+      console.error(err);
+    });
+    
+  </script>
+
+</body>
+</html>
